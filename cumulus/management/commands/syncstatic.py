@@ -62,7 +62,7 @@ class Command(NoArgsCommand):
         settings_excludes = CUMULUS["EXCLUDE_LIST"]
 
         # PATH SETTINGS
-        self.static_root = os.path.abspath(settings.STATIC_ROOT)
+        self.static_root = os.path.abspath(unicode(settings.STATIC_ROOT))
         self.static_url = settings.STATIC_URL
         if not self.static_root.endswith("/"):
             self.static_root = self.static_root + "/"
@@ -162,8 +162,8 @@ class Command(NoArgsCommand):
         Returns the cloud objects that match the include and exclude patterns.
         """
         cloud_objs = [cloud_obj["name"] for cloud_obj in self.container[1]]
-        includes_pattern = r"|".join([fnmatch.translate(x) for x in includes])
-        excludes_pattern = r"|".join([fnmatch.translate(x) for x in excludes]) or r"$."
+        includes_pattern = ur"|".join([fnmatch.translate(x) for x in includes])
+        excludes_pattern = ur"|".join([fnmatch.translate(x) for x in excludes]) or ur"$."
         excludes = [o for o in cloud_objs if re.match(excludes_pattern, o)]
         includes = [o for o in cloud_objs if re.match(includes_pattern, o)]
         return [o for o in includes if o not in excludes]
@@ -173,8 +173,8 @@ class Command(NoArgsCommand):
         Filters os.walk() with include and exclude patterns.
         See: http://stackoverflow.com/a/5141829/93559
         """
-        includes_pattern = r"|".join([fnmatch.translate(x) for x in includes])
-        excludes_pattern = r"|".join([fnmatch.translate(x) for x in excludes]) or r"$."
+        includes_pattern = ur"|".join([fnmatch.translate(x) for x in includes])
+        excludes_pattern = ur"|".join([fnmatch.translate(x) for x in excludes]) or ur"$."
         matches = []
         for root, dirs, files in os.walk(prefix, topdown=True):
             # exclude dirs
@@ -203,7 +203,7 @@ class Command(NoArgsCommand):
             if cloud_datetime and local_datetime < cloud_datetime:
                 self.skip_count += 1
                 if not self.quiet:
-                    print("Skipped {0}: not modified.".format(relpath))
+                    print(u"Skipped {0}: not modified.".format(relpath))
                 continue
             if relpath in remote_objects:
                 self.update_count += 1
@@ -238,7 +238,7 @@ class Command(NoArgsCommand):
             #sync_headers(cloud_obj)
         self.upload_count += 1
         if not self.quiet or self.verbosity > 1:
-            print("Uploaded: {0}".format(cloud_filename))
+            print(u"Uploaded: {0}".format(cloud_filename))
 
     def delete_extra_files(self, relpaths, cloud_objs):
         """
@@ -250,7 +250,7 @@ class Command(NoArgsCommand):
                     self.delete_cloud_obj(cloud_obj)
                 self.delete_count += 1
                 if not self.quiet or self.verbosity > 1:
-                    print("Deleted: {0}".format(cloud_obj))
+                    print(u"Deleted: {0}".format(cloud_obj))
 
     def delete_cloud_obj(self, cloud_obj):
         """
@@ -264,10 +264,10 @@ class Command(NoArgsCommand):
         Completely wipes out the contents of the container.
         """
         if self.test_run:
-            print("Wipe would delete {0} objects.".format(len(self.container[1])))
+            print(u"Wipe would delete {0} objects.".format(len(self.container[1])))
         else:
             if not self.quiet or self.verbosity > 1:
-                print("Deleting {0} objects...".format(len(self.container[1])))
+                print(u"Deleting {0} objects...".format(len(self.container[1])))
             for cloud_obj in self.container[1]:
                 self.conn.delete_object(self.container_name, cloud_obj["name"])
 
@@ -277,6 +277,6 @@ class Command(NoArgsCommand):
         """
         self.update_count = self.upload_count - self.create_count
         if self.test_run:
-            print("Test run complete with the following results:")
-        print("Skipped {0}. Created {1}. Updated {2}. Deleted {3}.".format(
+            print(u"Test run complete with the following results:")
+        print(u"Skipped {0}. Created {1}. Updated {2}. Deleted {3}.".format(
             self.skip_count, self.create_count, self.update_count, self.delete_count))
